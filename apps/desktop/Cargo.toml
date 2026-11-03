@@ -1,0 +1,22 @@
+[package]
+name = "gfcut-desktop"
+description = "GFCut Studio desktop app, built with GPUI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "gfcut-desktop"
+path = "src/main.rs"
+
+[dependencies]
+flume = { workspace = true }
+gpui = { workspace = true }
+image = { workspace = true }
+notify = { workspace = true }
+gfcut-mcp = { workspace = true }
+gfcut-timeline = { workspace = true }
+rfd = { workspace = true }
+serde_json = { workspace = true }
+smol = { workspace = true }
+uuid = { workspace = true }

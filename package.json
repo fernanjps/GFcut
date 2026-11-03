@@ -1,0 +1,16 @@
+{
+  "name": "gfcut",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "moon run web:dev",
+    "dev:api": "moon run api:dev",
+    "dev:desktop": "moon run desktop:dev",
+    "dev:mcp": "moon run mcp:dev",
+    "build": "moon run :build",
+    "test": "moon run :test",
+    "check": "moon run :check"
+  }
+}

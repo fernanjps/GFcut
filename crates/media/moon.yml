@@ -1,0 +1,14 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'typescript'
+layer: 'library'
+
+tasks:
+  setup:
+    command: 'bun run setup/setup.ts'
+    inputs:
+      - 'setup/ffmpeg.json'
+      - 'setup/setup.ts'
+    options:
+      cache: false
+      runInCI: false

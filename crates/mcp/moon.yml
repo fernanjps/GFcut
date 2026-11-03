@@ -1,0 +1,40 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'rust'
+layer: 'application'
+
+tasks:
+  dev:
+    command: 'cargo run -p gfcut-mcp'
+    options:
+      runInCI: false
+
+  check:
+    command: 'cargo check -p gfcut-mcp'
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+      - '/crates/timeline/src/**/*'
+      - '/crates/timeline/Cargo.toml'
+      - '/Cargo.toml'
+      - '/Cargo.lock'
+
+  test:
+    command: 'cargo test -p gfcut-mcp'
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+      - '/crates/timeline/src/**/*'
+      - '/crates/timeline/Cargo.toml'
+      - '/Cargo.toml'
+      - '/Cargo.lock'
+
+  build:
+    command: 'cargo build --release -p gfcut-mcp'
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+      - '/crates/timeline/src/**/*'
+      - '/crates/timeline/Cargo.toml'
+      - '/Cargo.toml'
+      - '/Cargo.lock'

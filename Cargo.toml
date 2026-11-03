@@ -1,0 +1,29 @@
+[workspace]
+resolver = "3"
+members = [
+  "apps/desktop",
+  "crates/mcp",
+  "crates/timeline",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1.0.104"
+flume = "0.11.1"
+gpui = "0.2.2"
+image = { version = "0.25.10", default-features = false, features = ["jpeg"] }
+notify = "8.0.0"
+gfcut-mcp = { path = "crates/mcp" }
+gfcut-timeline = { path = "crates/timeline" }
+rfd = "0.15"
+schemars = "1.2.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+smol = "2.0.2"
+tempfile = "3.27.0"
+thiserror = "2.0.19"
+uuid = { version = "1.24.0", features = ["v4", "serde"] }

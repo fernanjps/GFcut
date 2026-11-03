@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "id": "63a1c981-7677-40dd-bdbd-5c8ec3a38299",
+  "name": "Untitled Project",
+  "fps": {
+    "num": 30,
+    "den": 1
+  },
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "tracks": [
+    {
+      "id": "b924bc0a-e6ba-4faa-afed-ca24754585bf",
+      "name": "Textos & IA Subs",
+      "kind": "subtitle",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "bc6963ca-e8aa-4a42-8a88-3a7599aabf3a",
+      "name": "B-Roll & Overlays",
+      "kind": "video",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "6661c8dd-a4a1-4dc5-af46-f2303d1db290",
+      "name": "Video Principal",
+      "kind": "video",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "ccab57ed-d428-405d-b9e2-ebd055822ff0",
+      "name": "Voz / Diálogos",
+      "kind": "audio",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "108bff4b-70d5-45da-879c-906ca2d3567a",
+      "name": "Música BGM",
+      "kind": "audio",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "d1bda8cb-d6fb-41aa-bfbf-74e13fe88f70",
+      "name": "Efectos SFX",
+      "kind": "audio",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    }
+  ],
+  "assets": []
+}

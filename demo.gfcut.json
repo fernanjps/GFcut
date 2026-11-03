@@ -1,0 +1,723 @@
+{
+  "version": 1,
+  "id": "3d87736a-e883-408c-91e8-2db1131f9e26",
+  "name": "Untitled Project",
+  "fps": {
+    "num": 24,
+    "den": 1
+  },
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "tracks": [
+    {
+      "id": "afeed9da-cac0-4536-b44d-c2515a948c10",
+      "name": "Textos & IA Subs",
+      "kind": "subtitle",
+      "clips": [
+        {
+          "id": "9296a434-aa8f-4c8a-9398-22ee124aa974",
+          "name": "SUB_TTS: \"En un mundo donde todo pende de un hilo, surge una última esperanza\"",
+          "source_path": "./assets/tts\\voz_alvaro_en_un_mundo_donde_todo_p_a6562721.wav",
+          "in_point": 0.0,
+          "out_point": 4.927085714285714,
+          "timeline_in": 0.0,
+          "timeline_out": 4.927085714285714,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        },
+        {
+          "id": "f5d4d726-ea47-4f07-a3fd-c23a8d2ebf3a",
+          "name": "SUB_TTS: \"Prepárate para la misión definitiva\"",
+          "source_path": "./assets/tts\\voz_alvaro_en_un_mundo_donde_todo_p_a6562721.wav",
+          "in_point": 0.0,
+          "out_point": 2.6809142857142856,
+          "timeline_in": 4.927085714285714,
+          "timeline_out": 7.608,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        },
+        {
+          "id": "6d991bad-a5a4-4fb6-ba40-c045825e5af7",
+          "name": "SUB_T: \"LA MISIÓN DEFINITIVA\"",
+          "source_path": "./assets/presets\\SUB_T: \"LA MISIÓN DEFINITIVA\".mp4",
+          "in_point": 0.0,
+          "out_point": 4.0,
+          "timeline_in": 7.608,
+          "timeline_out": 11.608,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        },
+        {
+          "id": "10835380-899a-4379-bba1-fd15a100ed9a",
+          "name": "SUB_TTS: \"Dos operadores obligados a cooperar\"",
+          "source_path": "./assets/tts\\voz_alvaro_dos_operadores_obligados_4be75328.wav",
+          "in_point": 0.0,
+          "out_point": 2.373913043478261,
+          "timeline_in": 10.0,
+          "timeline_out": 12.37391304347826,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        },
+        {
+          "id": "28415bbe-01ef-48d1-96b1-b9a1ea0f2e25",
+          "name": "SUB_TTS: \"una entidad atrapada en la materia\"",
+          "source_path": "./assets/tts\\voz_alvaro_dos_operadores_obligados_4be75328.wav",
+          "in_point": 0.0,
+          "out_point": 2.3060869565217392,
+          "timeline_in": 12.37391304347826,
+          "timeline_out": 14.68,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        },
+        {
+          "id": "c1e0bca0-f8a8-418f-ab47-79ff36631c50",
+          "name": "SUB_T: \"Dos operadores obligados a cooperar... una entidad atrapada en la materia\"",
+          "source_path": "./assets/presets\\SUB_T: \"Dos operadores obligados a cooperar... una entidad atrapada en la materia\".mp4",
+          "in_point": 0.0,
+          "out_point": 15.0,
+          "timeline_in": 14.68,
+          "timeline_out": 29.68,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        }
+      ],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "e3cc7550-6a98-46e3-b9e1-16bd41e088dd",
+      "name": "B-Roll & Overlays",
+      "kind": "video",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "154e2448-361a-4630-b3af-fa82d0322a62",
+      "name": "Video Principal",
+      "kind": "video",
+      "clips": [
+        {
+          "id": "dd457ab9-1ec4-4e57-b145-f0402aaa9e76",
+          "name": "the msion prueba.mp4",
+          "source_path": "C:\\Users\\Ferna\\Videos\\para tik tok\\the msion prueba.mp4",
+          "in_point": 0.0,
+          "out_point": 73.607007,
+          "timeline_in": 0.0,
+          "timeline_out": 73.607007,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        }
+      ],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "ccb1d25f-5a63-48d9-b40e-52ca88508eaf",
+      "name": "Voz / Diálogos",
+      "kind": "audio",
+      "clips": [
+        {
+          "id": "9f28be57-6836-4003-a9e1-88b69739c544",
+          "name": "the msion prueba.mp4",
+          "source_path": "C:\\Users\\Ferna\\Videos\\para tik tok\\the msion prueba.mp4",
+          "in_point": 0.0,
+          "out_point": 73.607007,
+          "timeline_in": 0.0,
+          "timeline_out": 73.607007,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 0.3
+        },
+        {
+          "id": "a2cc6572-50f0-4d81-9ef6-38b1d377f7be",
+          "name": "voz_alvaro_en_un_mundo_donde_todo_p_a6562721.wav",
+          "source_path": "./assets/tts\\voz_alvaro_en_un_mundo_donde_todo_p_a6562721.wav",
+          "in_point": 0.0,
+          "out_point": 7.608,
+          "timeline_in": 0.0,
+          "timeline_out": 7.608,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        },
+        {
+          "id": "1534c72e-0b33-4a64-870a-1c0ed95f1fe5",
+          "name": "voz_alvaro_dos_operadores_obligados_4be75328.wav",
+          "source_path": "./assets/tts\\voz_alvaro_dos_operadores_obligados_4be75328.wav",
+          "in_point": 0.0,
+          "out_point": 4.68,
+          "timeline_in": 10.0,
+          "timeline_out": 14.68,
+          "speed": 1.0,
+          "position_x": 0.0,
+          "position_y": 0.0,
+          "scale": 1.0,
+          "opacity": 1.0,
+          "volume": 1.0
+        }
+      ],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "448601fd-e09c-46b2-b41e-6368639c326c",
+      "name": "Música BGM",
+      "kind": "audio",
+      "clips": [],
+      "muted": false,
+      "locked": false,
+      "visible": true,
+      "volume": 1.0
+    },
+    {
+      "id": "46dd843c-6491-49fa-b77f-0d6efd6c5bd5",
+      "name": "Efectos SFX",
+      "kind": "audio",
+      "clips": [],
+      "muted": false,
+      "locked": true,
+      "visible": true,
+      "volume": 1.0
+    }
+  ],
+  "assets": [
+    {
+      "id": "3974c0f6-c72f-48df-b325-168b8164a07d",
+      "path": "C:\\Users\\Ferna\\Videos\\the mison\\1.mp4",
+      "duration_secs": 10.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 11380477,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 24,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 8938892
+        }
+      ],
+      "audio_streams": [
+        {
+          "index": 1,
+          "codec": "aac",
+          "sample_rate": 48000,
+          "channels": 2,
+          "channel_layout": "stereo",
+          "bit_rate": 140104
+        }
+      ],
+      "transcript": {
+        "language": "en",
+        "segments": [
+          {
+            "id": "4f8fad33-ede3-4652-bdb4-4a4dbab9b44a",
+            "start": 0.0,
+            "end": 3.2,
+            "text": "Introduction segment from 1.mp4 (model: base)."
+          },
+          {
+            "id": "4b9c2e76-30b5-4a3f-b404-0498bc60d7ed",
+            "start": 3.2,
+            "end": 7.8,
+            "text": "Main content section ready for timeline cuts and ripple editing."
+          },
+          {
+            "id": "315d36e1-4e67-4fd7-ac4e-b305efe6dfc0",
+            "start": 7.8,
+            "end": 11.5,
+            "text": "Configure WHISPER_BIN or OPENAI_API_KEY for live speech-to-text inference."
+          }
+        ]
+      }
+    },
+    {
+      "id": "4b8af94b-b237-4196-bed9-d23fb60ef815",
+      "path": "C:\\Users\\Ferna\\Videos\\the mison\\1.5.mp4",
+      "duration_secs": 10.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 12051224,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 24,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 9475729
+        }
+      ],
+      "audio_streams": [
+        {
+          "index": 1,
+          "codec": "aac",
+          "sample_rate": 48000,
+          "channels": 2,
+          "channel_layout": "stereo",
+          "bit_rate": 140121
+        }
+      ],
+      "transcript": {
+        "language": "en",
+        "segments": [
+          {
+            "id": "0ca11d08-5b50-4a27-a57c-99f0842c80f9",
+            "start": 0.0,
+            "end": 3.2,
+            "text": "Introduction segment from 1.5.mp4 (model: base)."
+          },
+          {
+            "id": "6e98670d-9364-40b0-8576-40c709aa7e5a",
+            "start": 3.2,
+            "end": 7.8,
+            "text": "Main content section ready for timeline cuts and ripple editing."
+          },
+          {
+            "id": "bb611cc4-004f-4c0c-9e55-f56075d0982e",
+            "start": 7.8,
+            "end": 11.5,
+            "text": "Configure WHISPER_BIN or OPENAI_API_KEY for live speech-to-text inference."
+          }
+        ]
+      }
+    },
+    {
+      "id": "328daf1b-f622-4557-8a40-72550d578622",
+      "path": "./assets/ai_broll\\procedural_broll_ciudad_futurista_cyberpu_s1_dea65d04.mp4",
+      "duration_secs": 4.0,
+      "format_name": "unknown",
+      "size_bytes": null,
+      "video_streams": [],
+      "audio_streams": []
+    },
+    {
+      "id": "5e27c56c-128c-4bc3-b1b3-bc1864bce393",
+      "path": "C:\\Users\\Ferna\\Videos\\the mison\\portada.mp4",
+      "duration_secs": 10.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 11061833,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1080,
+            "height": 1920
+          },
+          "fps": {
+            "num": 24,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 8690872
+        }
+      ],
+      "audio_streams": [
+        {
+          "index": 1,
+          "codec": "aac",
+          "sample_rate": 48000,
+          "channels": 2,
+          "channel_layout": "stereo",
+          "bit_rate": 140119
+        }
+      ]
+    },
+    {
+      "id": "e1ad9168-5807-4848-9619-b7365ac6373b",
+      "path": "./assets/videos\\procedural_broll_crea_una_escerna_epica_f_s1_96f4ce9a.mp4",
+      "duration_secs": 8.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 1331022,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 1329202
+        }
+      ],
+      "audio_streams": []
+    },
+    {
+      "id": "89db1fe9-7b30-4a03-a6ab-e86f08e4b703",
+      "path": "./assets/presets\\B-ROLL_HoloGlitch_FX.mp4",
+      "duration_secs": 4.0,
+      "format_name": "unknown",
+      "size_bytes": null,
+      "video_streams": [],
+      "audio_streams": []
+    },
+    {
+      "id": "5051400e-9d40-40cf-84ca-1588ee03cff7",
+      "path": "./assets/presets\\Chromatic_Aberration.mp4",
+      "duration_secs": 2.5,
+      "format_name": "unknown",
+      "size_bytes": null,
+      "video_streams": [],
+      "audio_streams": []
+    },
+    {
+      "id": "4346ff49-e823-4169-8277-4b4806c58445",
+      "path": "./assets/videos\\procedural_broll_crea_una_escena_epica_re_s1_7f2281ef.mp4",
+      "duration_secs": 8.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 3520092,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 3518202
+        }
+      ],
+      "audio_streams": []
+    },
+    {
+      "id": "fd42fbe8-5334-47f2-8cc7-d5204385ff8e",
+      "path": "./assets/videos\\procedural_broll_crea_una_escena_epica_re_s1_8d881005.mp4",
+      "duration_secs": 8.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 5829412,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 5827502
+        }
+      ],
+      "audio_streams": []
+    },
+    {
+      "id": "9fe6ade8-9954-4de4-8d14-b82c0ce46054",
+      "path": "./assets/tts\\voz_bienvenidos_a_gfcut_edic_029af721.wav",
+      "duration_secs": 4.858639,
+      "format_name": "wav",
+      "size_bytes": 214312,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 22050,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 352800
+        }
+      ]
+    },
+    {
+      "id": "92fe46cc-497c-4199-bbbd-875e7ccd5e78",
+      "path": "./assets/tts\\voz_brian_bienvenidos_a_gfcut_stud_cfaecab7.wav",
+      "duration_secs": 6.16839,
+      "format_name": "wav",
+      "size_bytes": 272072,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 22050,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 352800
+        }
+      ]
+    },
+    {
+      "id": "1f4cbc3e-834d-444c-ac59-b56a439ee440",
+      "path": "C:\\Users\\Ferna\\Videos\\para tik tok\\the msion prueba.mp4",
+      "duration_secs": 73.607007,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 80395061,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 8540052
+        }
+      ],
+      "audio_streams": [
+        {
+          "index": 1,
+          "codec": "aac",
+          "sample_rate": 44100,
+          "channels": 2,
+          "channel_layout": "stereo",
+          "bit_rate": 194422
+        }
+      ]
+    },
+    {
+      "id": "2f5154ba-0203-4e2d-af26-6ddb20a5dc2c",
+      "path": "./assets/videos\\procedural_broll_ciudad_futurista_cyberpu_s1_1b27a484.mp4",
+      "duration_secs": 3.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 1335354,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 3557642
+        }
+      ],
+      "audio_streams": []
+    },
+    {
+      "id": "36f569d6-850b-4c71-894c-dfaab270613d",
+      "path": "./assets/tts\\voz_brian_qu_ocurre_cuando_la_real_54139fdf.wav",
+      "duration_secs": 99.705986,
+      "format_name": "wav",
+      "size_bytes": 4397080,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 22050,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 352800
+        }
+      ]
+    },
+    {
+      "id": "e9cae7e3-69d4-4d4c-8200-1040626f6a71",
+      "path": "./assets/tts\\voz_brian_qu_ocurre_cuando_la_real_92207c84.wav",
+      "duration_secs": 99.705986,
+      "format_name": "wav",
+      "size_bytes": 4397080,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 22050,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 352800
+        }
+      ]
+    },
+    {
+      "id": "715400ab-9007-498a-bc83-a9a5d7d03898",
+      "path": "./assets/tts\\voz_brian_qu_ocurre_cuando_la_real_eec49a0f.wav",
+      "duration_secs": 94.44,
+      "format_name": "wav",
+      "size_bytes": 9066318,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 48000,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 768000
+        }
+      ]
+    },
+    {
+      "id": "69bf7d71-acb9-484c-86aa-287a337e8518",
+      "path": "./assets/videos\\procedural_broll_ciudad_futurista_cyberpu_s1_5b712780.mp4",
+      "duration_secs": 4.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 33386638,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 66770152
+        }
+      ],
+      "audio_streams": []
+    },
+    {
+      "id": "a38078e8-8cc3-4b21-82d3-b0658fe1c4cf",
+      "path": "./assets/videos\\procedural_broll_toma_area_cinematogrfica_s1_66a8eda8.mp4",
+      "duration_secs": 8.0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "size_bytes": 11928666,
+      "video_streams": [
+        {
+          "index": 0,
+          "codec": "h264",
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "fps": {
+            "num": 30,
+            "den": 1
+          },
+          "pixel_format": "yuv420p",
+          "bit_rate": 11926720
+        }
+      ],
+      "audio_streams": []
+    },
+    {
+      "id": "edc78423-c5cc-4925-b90b-db5ca9c77ead",
+      "path": "./assets/tts\\voz_alvaro_en_un_mundo_donde_todo_p_a6562721.wav",
+      "duration_secs": 7.608,
+      "format_name": "wav",
+      "size_bytes": 730446,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 48000,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 768000
+        }
+      ]
+    },
+    {
+      "id": "00057071-386c-49fa-8172-199639e98290",
+      "path": "./assets/tts\\voz_alvaro_dos_operadores_obligados_4be75328.wav",
+      "duration_secs": 4.68,
+      "format_name": "wav",
+      "size_bytes": 449358,
+      "video_streams": [],
+      "audio_streams": [
+        {
+          "index": 0,
+          "codec": "pcm_s16le",
+          "sample_rate": 48000,
+          "channels": 1,
+          "channel_layout": null,
+          "bit_rate": 768000
+        }
+      ]
+    },
+    {
+      "id": "975ed626-8a79-47e3-aee8-8b3a63de7d7c",
+      "path": "./assets/presets\\SUB_T: \"LA MISIÓN DEFINITIVA\".mp4",
+      "duration_secs": 4.0,
+      "format_name": "unknown",
+      "size_bytes": null,
+      "video_streams": [],
+      "audio_streams": []
+    },
+    {
+      "id": "50ba34a1-0b7c-48b7-b3c8-c268829834a9",
+      "path": "./assets/presets\\SUB_T: \"Dos operadores obligados a cooperar... una entidad atrapada en la materia\".mp4",
+      "duration_secs": 15.0,
+      "format_name": "unknown",
+      "size_bytes": null,
+      "video_streams": [],
+      "audio_streams": []
+    }
+  ]
+}

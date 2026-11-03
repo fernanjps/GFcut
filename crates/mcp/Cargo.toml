@@ -1,0 +1,24 @@
+[package]
+name = "gfcut-mcp"
+description = "Model Context Protocol (MCP) server for GFCut video editing over stdio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "gfcut_mcp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "gfcut-mcp"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+gfcut-timeline = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tempfile = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
