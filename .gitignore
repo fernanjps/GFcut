@@ -8,3 +8,8 @@ docs/
 
 # moon runtime cache
 .moon/cache/
+
+# Caché local y binarios multimedia descargados
+.cache/
+*.dll
+*.exe
