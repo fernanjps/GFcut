@@ -6,6 +6,11 @@ target/
 !.env.example
 docs/
 
+
+
+/coverage/
+
+
 # moon runtime cache
 .moon/cache/
 

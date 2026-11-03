@@ -1,0 +1,9 @@
+# Marcar carpetas web, documentación y reportes como generados/vendored
+*.html linguist-detectable=false
+*.htm linguist-detectable=false
+*.css linguist-detectable=false
+*.js linguist-detectable=false
+
+# Si tienes carpetas específicas con bundles o docs:
+docs/** linguist-documentation
+target/** linguist-vendored
