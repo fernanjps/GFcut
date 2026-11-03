@@ -102,7 +102,7 @@ pub(crate) fn resample_peaks_for_range(
         let end = end_idx.min(peaks.len()).max(start_idx + 1);
         &peaks[start_idx..end]
     } else {
-        &peaks[..]
+        peaks
     };
 
     if slice.is_empty() {

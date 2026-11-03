@@ -124,7 +124,7 @@ pub(crate) fn procedural_thumbnail_render_image(
 
             if is_audio {
                 // Draw a stylized emerald/cyan waveform across the center of the card
-                let col = (x / 4) as u32;
+                let col = x / 4;
                 let wave_seed = hash.wrapping_add(col.wrapping_mul(1103515245));
                 let amp = 6 + ((wave_seed >> 16) % 36) as i32;
                 let dist = (y as i32 - mid_y).abs();

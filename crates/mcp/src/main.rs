@@ -14,10 +14,12 @@ fn parse_project_path() -> PathBuf {
         }
     }
 
-    if let Ok(env_path) = env::var("GFCUT_PROJECT_PATH") {
-        if !env_path.is_empty() {
-            return PathBuf::from(env_path);
-        }
+    if let Some(env_path) = env::var("GFCUT_PROJECT_PATH")
+        .or_else(|_| env::var("OPENCUT_PROJECT_PATH"))
+        .ok()
+        .filter(|p| !p.is_empty())
+    {
+        return PathBuf::from(env_path);
     }
 
     PathBuf::from("demo.gfcut.json")

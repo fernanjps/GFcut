@@ -83,10 +83,7 @@ pub(crate) fn compute_trim(
         }
         TrimEdge::Right => {
             let min_t = original.timeline_in + MIN_TRIM_CLIP_SECS;
-            let effective_src = match source_duration {
-                Some(src) => Some(src.max(original.out_point)),
-                None => None,
-            };
+            let effective_src = source_duration.map(|src| src.max(original.out_point));
             let max_t = match effective_src {
                 Some(src) => original.timeline_out + (src - original.out_point).max(0.0) / speed,
                 None => f64::INFINITY,
