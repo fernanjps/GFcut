@@ -59,6 +59,16 @@ impl Inspector {
         }
 
         let key = event.keystroke.key.as_str();
+        let is_ctrl = event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
+        if is_ctrl && key.eq_ignore_ascii_case("v") {
+            if let Some(item) = cx.read_from_clipboard()
+                && let Some(text) = item.text() {
+                    self.text_draft.push_str(&text);
+                    cx.notify();
+                }
+            return;
+        }
+
         match key {
             "backspace" => {
                 self.text_draft.pop();
@@ -690,13 +700,11 @@ impl Render for Inspector {
                                                             let ox = (proj_w as f32 * 0.25).round();
                                                             let oy = -(proj_h as f32 * 0.25).round();
                                                             s.set_selected_clip_position(ox, oy, cx);
-                                                            if let Some(c_id) = s.selected_clip_id() {
-                                                                if let Ok((_, c)) = s.project().find_clip(c_id) {
-                                                                    if (c.scale - 1.0).abs() < 0.01 {
+                                                            if let Some(c_id) = s.selected_clip_id()
+                                                                && let Ok((_, c)) = s.project().find_clip(c_id)
+                                                                    && (c.scale - 1.0).abs() < 0.01 {
                                                                         s.set_selected_clip_scale(0.50, cx);
                                                                     }
-                                                                }
-                                                            }
                                                         });
                                                     }),
                                             )
@@ -713,13 +721,11 @@ impl Render for Inspector {
                                                             let ox = (proj_w as f32 * 0.25).round();
                                                             let oy = (proj_h as f32 * 0.25).round();
                                                             s.set_selected_clip_position(ox, oy, cx);
-                                                            if let Some(c_id) = s.selected_clip_id() {
-                                                                if let Ok((_, c)) = s.project().find_clip(c_id) {
-                                                                    if (c.scale - 1.0).abs() < 0.01 {
+                                                            if let Some(c_id) = s.selected_clip_id()
+                                                                && let Ok((_, c)) = s.project().find_clip(c_id)
+                                                                    && (c.scale - 1.0).abs() < 0.01 {
                                                                         s.set_selected_clip_scale(0.50, cx);
                                                                     }
-                                                                }
-                                                            }
                                                         });
                                                     }),
                                             )
@@ -736,13 +742,11 @@ impl Render for Inspector {
                                                             let ox = -(proj_w as f32 * 0.25).round();
                                                             let oy = (proj_h as f32 * 0.25).round();
                                                             s.set_selected_clip_position(ox, oy, cx);
-                                                            if let Some(c_id) = s.selected_clip_id() {
-                                                                if let Ok((_, c)) = s.project().find_clip(c_id) {
-                                                                    if (c.scale - 1.0).abs() < 0.01 {
+                                                            if let Some(c_id) = s.selected_clip_id()
+                                                                && let Ok((_, c)) = s.project().find_clip(c_id)
+                                                                    && (c.scale - 1.0).abs() < 0.01 {
                                                                         s.set_selected_clip_scale(0.50, cx);
                                                                     }
-                                                                }
-                                                            }
                                                         });
                                                     }),
                                             ),

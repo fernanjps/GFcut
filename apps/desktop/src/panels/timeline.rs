@@ -144,7 +144,7 @@ fn track_studio_badge_spec(track: &Track, row_idx: usize) -> (&'static str, f32)
         match track.kind {
             TrackKind::Video => ("V1", 0.56),
             TrackKind::Audio => {
-                if row_idx % 2 == 0 {
+                if row_idx.is_multiple_of(2) {
                     ("A1", 0.43)
                 } else {
                     ("A2", 0.50)
@@ -660,14 +660,21 @@ impl Render for Timeline {
                             s.zoom_timeline(zoom_factor, Some(focal_time), lane_width_f32, cx);
                         });
                     }
-                } else if event.modifiers.shift || dx.abs() > dy.abs() {
-                    let delta = if dx.abs() > dy.abs() { -dx } else { -dy };
-                    state_wheel.update(cx, |s, cx| {
-                        s.scroll_timeline_by(delta, lane_width_f32, cx);
-                    });
+                } else {
+                    let delta = if dx.abs() > dy.abs() {
+                        -dx
+                    } else {
+                        -dy * 1.5
+                    };
+                    if delta.abs() > 0.01 {
+                        state_wheel.update(cx, |s, cx| {
+                            s.scroll_timeline_by(delta, lane_width_f32, cx);
+                        });
+                    }
                 }
             })
             .on_drag_move::<ClipDrag>(cx.listener(Timeline::on_clip_drag_move))
+            .on_drag_move::<TimelineScrollDrag>(cx.listener(Timeline::on_scrollbar_drag_move))
             .on_drop(cx.listener(Timeline::on_clip_drop))
             .on_drag_move::<ClipTrimDrag>(cx.listener(Timeline::on_trim_drag_move))
             .on_drop(cx.listener(Timeline::on_trim_drop))
@@ -1001,6 +1008,7 @@ fn render_horizontal_scrollbar(
         .into_any_element()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn render_time_ruler(
     timeline_span: f64,
     playhead_time: f64,

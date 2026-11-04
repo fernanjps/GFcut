@@ -367,11 +367,9 @@ pub fn dispatch_tool(
                 .project_path
                 .as_deref()
                 .unwrap_or(default_project_path);
-            if project_path.exists() {
-                if let Ok(mut project) = Project::load_from_file(project_path) {
-                    project.upsert_asset(asset.clone());
-                    let _ = project.save_to_file_atomic(project_path);
-                }
+            if let Ok(mut project) = Project::load_from_file(project_path) {
+                project.upsert_asset(asset.clone());
+                let _ = project.save_to_file_atomic(project_path);
             }
 
             CallToolResult::success_json(&asset)

@@ -80,23 +80,21 @@ impl Shell {
                     return;
                 }
                 "v" | "V" if ctrl_or_cmd => {
-                    if let Some(item) = cx.read_from_clipboard() {
-                        if let Some(text) = item.text() {
+                    if let Some(item) = cx.read_from_clipboard()
+                        && let Some(text) = item.text() {
                             self.project_state.update(cx, |s, cx| {
                                 s.set_settings_api_key_input(text, cx);
                             });
                         }
-                    }
                     return;
                 }
                 _ => {
-                    if let Some(ch) = &event.keystroke.key_char {
-                        if !ctrl_or_cmd {
+                    if let Some(ch) = &event.keystroke.key_char
+                        && !ctrl_or_cmd {
                             self.project_state.update(cx, |s, cx| {
                                 s.settings_key_append(ch, cx);
                             });
                         }
-                    }
                     return;
                 }
             }
@@ -384,13 +382,12 @@ impl Shell {
                                         .variant(ButtonVariant::Secondary)
                                         .size(ButtonSize::XSmall)
                                         .on_click(move |_, _, cx| {
-                                            if let Some(item) = cx.read_from_clipboard() {
-                                                if let Some(text) = item.text() {
+                                            if let Some(item) = cx.read_from_clipboard()
+                                                && let Some(text) = item.text() {
                                                     state_paste.update(cx, |s, cx| {
                                                         s.set_settings_api_key_input(text, cx);
                                                     });
                                                 }
-                                            }
                                         }),
                                     ),
                             ),
@@ -1189,13 +1186,18 @@ impl Render for Shell {
                                     .text_color(colors.foreground)
                                     .text_size(px(11.0))
                                     .font_weight(FontWeight::BOLD)
-                                    .child("🎬 GFCut"),
+                                    .child("🎬 GFCut Studio"),
                             )
-                            .child(
-                                div()
-                                    .text_size(px(12.0))
-                                    .font_weight(FontWeight::BOLD)
-                                    .child(project.name.clone()),
+                            .when(
+                                project.name != "GFCut" && !project.name.is_empty(),
+                                |this| {
+                                    this.child(
+                                        div()
+                                            .text_size(px(12.0))
+                                            .font_weight(FontWeight::BOLD)
+                                            .child(format!("· {}", project.name)),
+                                    )
+                                },
                             )
                             .child(Separator::vertical())
                             .child(undo_btn)

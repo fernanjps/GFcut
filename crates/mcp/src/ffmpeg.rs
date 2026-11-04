@@ -168,10 +168,10 @@ pub fn probe_media(file_path: &Path) -> Result<MediaAsset, String> {
 
     // If the video stream duration differs from format duration, prefer the real video stream duration
     // to prevent desynchronization between V1 and A1:
-    if let Some(stream_v_dur) = probe_video_stream_duration(file_path) {
-        if stream_v_dur > 0.0 && (duration_secs <= 0.0 || (stream_v_dur - duration_secs).abs() > 0.01) {
-            duration_secs = stream_v_dur;
-        }
+    if let Some(stream_v_dur) = probe_video_stream_duration(file_path)
+        .filter(|&d| d > 0.0 && (duration_secs <= 0.0 || (d - duration_secs).abs() > 0.01))
+    {
+        duration_secs = stream_v_dur;
     }
     let size_bytes = format.size.as_deref().and_then(|s| s.parse::<u64>().ok());
     let format_name = format.format_name.unwrap_or_else(|| "unknown".to_owned());
@@ -325,20 +325,15 @@ fn format_srt_timestamp(seconds: f64) -> String {
 }
 
 fn media_has_audio(path: &Path, assets: &[MediaAsset]) -> bool {
-    if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
-        if matches!(ext.to_ascii_lowercase().as_str(), "wav" | "mp3" | "flac" | "ogg" | "m4a") {
+    if let Some(ext) = path.extension().and_then(|s| s.to_str())
+        && matches!(ext.to_ascii_lowercase().as_str(), "wav" | "mp3" | "flac" | "ogg" | "m4a") {
             return true;
         }
+    if let Some(asset) = assets.iter().find(|a| a.path == path && a.format_name != "unknown") {
+        return !asset.audio_streams.is_empty();
     }
-    if let Some(asset) = assets.iter().find(|a| a.path == path) {
-        if asset.format_name != "unknown" {
-            return !asset.audio_streams.is_empty();
-        }
-    }
-    if path.exists() {
-        if let Ok(info) = probe_media(path) {
-            return !info.audio_streams.is_empty();
-        }
+    if let Ok(info) = probe_media(path) {
+        return !info.audio_streams.is_empty();
     }
     false
 }
@@ -501,10 +496,8 @@ pub fn export_project_with_ffmpeg(
         let in_idx = input_paths.len();
         input_paths.push(clip.source_path.clone());
         input_flags.push(Vec::new());
-        if let Some(t) = v2_track {
-            if !t.muted && t.volume > 0.001 && media_has_audio(&clip.source_path, &project.assets) {
-                v2_audio_sources.push((in_idx, clip, v2_vol));
-            }
+        if let Some(_t) = v2_track.filter(|t| !t.muted && t.volume > 0.001 && media_has_audio(&clip.source_path, &project.assets)) {
+            v2_audio_sources.push((in_idx, clip, v2_vol));
         }
 
         let in_pt = clip.in_point;
@@ -680,7 +673,7 @@ pub fn export_project_with_ffmpeg(
             }
             let total_inputs = 1 + extra_audio_labels.len();
             filter_parts.push(format!(
-                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=2[outa]"
+                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=0:normalize=0[outa]"
             ));
         }
     } else if !extra_audio_labels.is_empty() {
@@ -693,7 +686,7 @@ pub fn export_project_with_ffmpeg(
             }
             let total_inputs = extra_audio_labels.len();
             filter_parts.push(format!(
-                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=2[outa]"
+                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=0:normalize=0[outa]"
             ));
         }
     }
@@ -916,23 +909,19 @@ pub fn transcribe_media_with_pipeline(
                 .args(["--model", model_name, "--output_format", "json", "-oj"])
                 .output();
 
-            if let Ok(output) = run_res {
-                if output.status.success() {
-                    if json_out_path.exists() {
-                        if let Ok(raw) = std::fs::read_to_string(&json_out_path) {
-                            let _ = std::fs::remove_file(&json_out_path);
-                            if let Ok(transcript) = parse_whisper_json(&raw) {
-                                return Ok((transcript, format!("local-cli:{bin} ({model_name})")));
-                            }
-                        }
-                    } else if let Ok(transcript) =
-                        parse_whisper_json(&String::from_utf8_lossy(&output.stdout))
-                    {
-                        if !transcript.segments.is_empty() {
+            if let Some(output) = run_res.ok().filter(|o| o.status.success()) {
+                if json_out_path.exists() {
+                    if let Ok(raw) = std::fs::read_to_string(&json_out_path) {
+                        let _ = std::fs::remove_file(&json_out_path);
+                        if let Ok(transcript) = parse_whisper_json(&raw) {
                             return Ok((transcript, format!("local-cli:{bin} ({model_name})")));
                         }
                     }
-                }
+                } else if let Ok(transcript) =
+                    parse_whisper_json(&String::from_utf8_lossy(&output.stdout))
+                    && !transcript.segments.is_empty() {
+                        return Ok((transcript, format!("local-cli:{bin} ({model_name})")));
+                    }
             }
         }
     }
@@ -1146,8 +1135,8 @@ pub fn split_curl_body_and_status(raw_output: &str) -> (&str, u16) {
 /// Parses Google AI Studio / Vertex REST JSON error payloads and HTTP status codes into
 /// a clear, user-visible error message (`400 Bad Request`, `401 Unauthorized`, `403 Quota Exceeded`, etc.).
 pub fn parse_google_api_error(http_code: u16, body: &str) -> Option<String> {
-    if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(body) {
-        if let Some(err_obj) = json_val.get("error") {
+    if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(body)
+        && let Some(err_obj) = json_val.get("error") {
             let code = err_obj
                 .get("code")
                 .and_then(|v| v.as_u64())
@@ -1165,7 +1154,6 @@ pub fn parse_google_api_error(http_code: u16, body: &str) -> Option<String> {
                 "Google AI Studio Error HTTP {code} ({status}): {message}"
             ));
         }
-    }
 
     if http_code >= 400 {
         let reason = http_status_reason(http_code);
@@ -2063,13 +2051,11 @@ pub fn generate_studio_preset_clip(
         .map_err(|e| format!("No se pudo crear el directorio ./assets/presets/: {e}"))?;
 
     let output_mp4 = out_dir.join(format!("{label}.mp4"));
-    if output_mp4.is_file() {
-        if let Ok(meta) = std::fs::metadata(&output_mp4) {
-            if meta.len() > 1000 {
+    if output_mp4.is_file()
+        && let Ok(meta) = std::fs::metadata(&output_mp4)
+            && meta.len() > 1000 {
                 return Ok(output_mp4);
             }
-        }
-    }
 
     let dur = duration_secs.clamp(0.5, 30.0);
     let dur_str = format!("{dur:.2}");
@@ -2342,49 +2328,50 @@ pub fn synthesize_tts_wav_with_voice(
                             use std::io::Write;
                             let _ = stdin.write_all(clean_text.as_bytes());
                         }
-                        if let Ok(status) = child.wait() {
-                            if status.success()
+                        if let Ok(status) = child.wait()
+                            && status.success()
                                 && output_wav.exists()
                                 && output_wav.metadata().map(|m| m.len() > 256).unwrap_or(false)
                             {
                                 synthesized_engine = Some(format!("{label} ({})", voice_spec.label));
                             }
-                        }
                     }
                 }
             }
             LocalTtsKind::VoiceStudio => {
                 let mut cmd = Command::new(&bin_path);
                 configure_headless_cmd(&mut cmd);
-                if let Ok(out) = cmd
+                if let Some(_out) = cmd
                     .args(["--text", clean_text, "--voice", voice_spec.edge_voice, "--output_path"])
                     .arg(&output_wav)
                     .output()
-                {
-                    if out.status.success()
-                        && output_wav.exists()
+                    .ok()
+                    .filter(|o| o.status.success())
+                    && output_wav.exists()
                         && output_wav.metadata().map(|m| m.len() > 256).unwrap_or(false)
                     {
                         synthesized_engine = Some(format!("{label} ({})", voice_spec.label));
                     }
-                }
             }
             LocalTtsKind::EdgeTts => {
+                let temp_txt = out_dir.join(format!("edge_txt_{short_id}.txt"));
                 let temp_mp3 = out_dir.join(format!("edge_tmp_{short_id}.mp3"));
-                let mut cmd = Command::new(&bin_path);
-                configure_headless_cmd(&mut cmd);
-                if let Ok(out) = cmd
-                    .args([
-                        "--voice",
-                        voice_spec.edge_voice,
-                        "--text",
-                        clean_text,
-                        "--write-media",
-                    ])
-                    .arg(&temp_mp3)
-                    .output()
-                {
-                    if out.status.success() && temp_mp3.exists() {
+                if std::fs::write(&temp_txt, clean_text).is_ok() {
+                    let mut cmd = Command::new(&bin_path);
+                    configure_headless_cmd(&mut cmd);
+                    if let Ok(out) = cmd
+                        .args([
+                            "--voice",
+                            voice_spec.edge_voice,
+                            "-f",
+                        ])
+                        .arg(&temp_txt)
+                        .arg("--write-media")
+                        .arg(&temp_mp3)
+                        .output()
+                        && out.status.success()
+                        && temp_mp3.metadata().map(|m| m.len() > 256).unwrap_or(false)
+                    {
                         let ffmpeg = resolve_binary("ffmpeg");
                         let mut ff = Command::new(ffmpeg);
                         configure_headless_cmd(&mut ff);
@@ -2399,82 +2386,68 @@ pub fn synthesize_tts_wav_with_voice(
                         {
                             synthesized_engine = Some(format!("{label} ({})", voice_spec.label));
                         }
-                        let _ = std::fs::remove_file(&temp_mp3);
                     }
+                    let _ = std::fs::remove_file(&temp_mp3);
+                    let _ = std::fs::remove_file(&temp_txt);
                 }
             }
         }
     }
 
-    // 2. Fallback: Native Windows SAPI5 SpeechSynthesizer via headless PowerShell with voice selection
+    // 2. Fallback: Native Windows SAPI5 SpeechSynthesizer via headless PowerShell with UTF-8 support
     #[cfg(target_os = "windows")]
     if synthesized_engine.is_none() {
-        let escaped_text = clean_text.replace('\'', "''").replace('"', "").replace('`', "");
-        let escaped_path = output_wav.to_string_lossy().replace('\'', "''");
-        let sapi_voice = voice_spec.sapi_voice;
-        let is_spanish_flag = if voice_spec.edge_voice.starts_with("es") { "$true" } else { "$false" };
-        let ps_script = format!(
-            "Add-Type -AssemblyName System.Speech; \
-             $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; \
-             $ok = $false; \
-             try {{ $s.SelectVoice('{sapi_voice}'); $ok = $true }} catch {{}}; \
-             if (-not $ok -and {is_spanish_flag}) {{ \
-                 $sp = $s.GetInstalledVoices() | Where-Object {{ $_.VoiceInfo.Culture.Name -like 'es*' }} | Select-Object -First 1; \
-                 if ($sp) {{ try {{ $s.SelectVoice($sp.VoiceInfo.Name) }} catch {{}} }} \
-             }}; \
-             $s.SetOutputToWaveFile('{escaped_path}'); \
-             $s.Speak('{escaped_text}'); \
-             $s.Dispose()"
-        );
-        let mut ps_cmd = Command::new("powershell");
-        configure_headless_cmd(&mut ps_cmd);
-        if let Ok(out) = ps_cmd
-            .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
-            .output()
-        {
-            if out.status.success()
-                && output_wav.exists()
-                && output_wav.metadata().map(|m| m.len() > 256).unwrap_or(false)
+        let temp_txt = out_dir.join(format!("sapi_txt_{short_id}.txt"));
+        if std::fs::write(&temp_txt, clean_text).is_ok() {
+            let escaped_txt = temp_txt.to_string_lossy().replace('\'', "''");
+            let escaped_path = output_wav.to_string_lossy().replace('\'', "''");
+            let sapi_voice = voice_spec.sapi_voice;
+            let is_spanish_flag = if voice_spec.edge_voice.starts_with("es") { "$true" } else { "$false" };
+            let ps_script = format!(
+                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; \
+                 Add-Type -AssemblyName System.Speech; \
+                 $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; \
+                 $ok = $false; \
+                 try {{ $s.SelectVoice('{sapi_voice}'); $ok = $true }} catch {{}}; \
+                 if (-not $ok -and {is_spanish_flag}) {{ \
+                     $sp = $s.GetInstalledVoices() | Where-Object {{ $_.VoiceInfo.Culture.Name -like 'es*' }} | Select-Object -First 1; \
+                     if ($sp) {{ try {{ $s.SelectVoice($sp.VoiceInfo.Name); $ok = $true }} catch {{}} }} \
+                 }}; \
+                 $txt = [System.IO.File]::ReadAllText('{escaped_txt}', [System.Text.Encoding]::UTF8); \
+                 $s.SetOutputToWaveFile('{escaped_path}'); \
+                 $s.Speak($txt); \
+                 $s.Dispose()"
+            );
+            let mut ps_cmd = Command::new("powershell");
+            configure_headless_cmd(&mut ps_cmd);
+            if let Some(out) = ps_cmd
+                .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+                .output()
+                .ok()
+                .filter(|o| o.status.success())
             {
-                synthesized_engine = Some(format!("Windows SAPI5 ({})", voice_spec.label));
+                let _ = out;
+                if output_wav.exists()
+                    && output_wav.metadata().map(|m| m.len() > 256).unwrap_or(false)
+                {
+                    synthesized_engine = Some(format!("Windows SAPI5 ({})", voice_spec.label));
+                }
             }
+            let _ = std::fs::remove_file(&temp_txt);
         }
     }
 
     let word_count = clean_text.split_whitespace().count().max(1);
     let estimated_dur = ((word_count as f64) * 0.42).clamp(1.8, 15.0);
 
-    // 3. Last-resort fallback: FFmpeg synthesized harmonic voice tone
-    if synthesized_engine.is_none() {
-        let ffmpeg = resolve_binary("ffmpeg");
-        let dur_str = format!("{estimated_dur:.2}");
-        let mut ff_cmd = Command::new(&ffmpeg);
-        configure_headless_cmd(&mut ff_cmd);
-        let status = ff_cmd
-            .args([
-                "-y",
-                "-hide_banner",
-                "-loglevel",
-                "error",
-                "-f",
-                "lavfi",
-                "-i",
-                &format!(
-                    "aevalsrc='0.25*sin(2*PI*190*t)*(0.5+0.5*sin(2*PI*4.5*t))+0.12*sin(2*PI*380*t)':s=48000:d={dur_str}"
-                ),
-                "-c:a",
-                "pcm_s16le",
-            ])
-            .arg(&output_wav)
-            .output()
-            .map_err(|e| format!("Error al sintetizar WAV con FFmpeg: {e}"))?;
-
-        if !status.status.success() {
-            let stderr = String::from_utf8_lossy(&status.stderr);
-            return Err(format!("Fallo al generar audio TTS: {}", stderr.trim()));
+    let engine_label = match synthesized_engine {
+        Some(lbl) => lbl,
+        None => {
+            return Err(
+                "No se pudo sintetizar voz: el motor neuronal Edge-TTS y el sintetizador de voz del sistema no pudieron procesar el texto. Verifica tu conexión a internet o los paquetes de voz instalados.".to_owned(),
+            );
         }
-        synthesized_engine = Some("FFmpeg Audio Synth".to_owned());
-    }
+    };
 
     let actual_duration = probe_media(&output_wav)
         .ok()
@@ -2485,7 +2458,7 @@ pub fn synthesize_tts_wav_with_voice(
     Ok((
         output_wav,
         actual_duration,
-        synthesized_engine.unwrap_or_else(|| "System TTS".to_owned()),
+        engine_label,
     ))
 }
 

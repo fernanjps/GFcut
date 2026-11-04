@@ -141,6 +141,16 @@ impl Browser {
             ActiveTextInput::None => return,
         };
 
+        let is_ctrl = event.keystroke.modifiers.control || event.keystroke.modifiers.platform;
+        if is_ctrl && key.eq_ignore_ascii_case("v") {
+            if let Some(item) = cx.read_from_clipboard()
+                && let Some(text) = item.text() {
+                    target.push_str(&text);
+                    cx.notify();
+                }
+            return;
+        }
+
         match key {
             "backspace" => {
                 target.pop();
@@ -181,6 +191,13 @@ impl Browser {
         let mut items: Vec<MediaCardItem> = Vec::new();
 
         for asset in &project.assets {
+            let path_lossy = asset.path.to_string_lossy();
+            if path_lossy.contains("SUB_T:")
+                || path_lossy.contains("SUB_SB")
+                || path_lossy.ends_with(".preset")
+            {
+                continue;
+            }
             let name = asset
                 .path
                 .file_name()
@@ -190,11 +207,7 @@ impl Browser {
 
             let is_audio = if is_video_file(&asset.path) || !asset.video_streams.is_empty() {
                 false
-            } else if is_audio_file(&asset.path) || !asset.audio_streams.is_empty() {
-                true
-            } else {
-                false
-            };
+            } else { is_audio_file(&asset.path) || !asset.audio_streams.is_empty() };
 
             let (res_badge, fps_badge) = if let Some(vs) = asset.video_streams.first() {
                 (
@@ -229,18 +242,21 @@ impl Browser {
         }
 
         for track in &project.tracks {
+            if track.kind == TrackKind::Subtitle {
+                continue;
+            }
             for clip in &track.clips {
-                if clip.source_path.extension().and_then(OsStr::to_str) == Some("preset") {
+                let cp_lossy = clip.source_path.to_string_lossy();
+                if clip.source_path.extension().and_then(OsStr::to_str) == Some("preset")
+                    || cp_lossy.contains("SUB_T:")
+                    || cp_lossy.contains("SUB_SB")
+                {
                     continue;
                 }
                 if !items.iter().any(|item| item.path == clip.source_path) {
                     let is_audio = if is_video_file(&clip.source_path) {
                         false
-                    } else if is_audio_file(&clip.source_path) || track.kind == TrackKind::Audio {
-                        true
-                    } else {
-                        false
-                    };
+                    } else { is_audio_file(&clip.source_path) || track.kind == TrackKind::Audio };
                     let thumbnail = state
                         .thumbnail_for_path(&clip.source_path)
                         .unwrap_or_else(|| {
@@ -334,13 +350,12 @@ impl Browser {
                         .variant(ButtonVariant::Default)
                         .size(ButtonSize::XSmall)
                         .on_click(move |_, _, cx| {
-                            if let Some(item) = cx.read_from_clipboard() {
-                                if let Some(text) = item.text() {
+                            if let Some(item) = cx.read_from_clipboard()
+                                && let Some(text) = item.text() {
                                     state_paste.update(cx, |s, cx| {
                                         s.set_gemini_api_key(text, cx);
                                     });
                                 }
-                            }
                         }),
                     )
                     .child(
@@ -567,15 +582,14 @@ impl Browser {
                                     .variant(ButtonVariant::Ghost)
                                     .size(ButtonSize::XSmall)
                                     .on_click(cx.listener(|this, _, _, cx| {
-                                        if let Some(clip) = cx.read_from_clipboard() {
-                                            if let Some(txt) = clip.text() {
+                                        if let Some(clip) = cx.read_from_clipboard()
+                                            && let Some(txt) = clip.text() {
                                                 let trimmed = txt.trim();
                                                 if !trimmed.is_empty() {
                                                     this.broll_prompt = trimmed.to_owned();
                                                     cx.notify();
                                                 }
                                             }
-                                        }
                                     })),
                             ),
                     )
@@ -705,15 +719,14 @@ impl Browser {
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::XSmall)
                             .on_click(cx.listener(|this, _, _, cx| {
-                                if let Some(clip) = cx.read_from_clipboard() {
-                                    if let Some(txt) = clip.text() {
+                                if let Some(clip) = cx.read_from_clipboard()
+                                    && let Some(txt) = clip.text() {
                                         let trimmed = txt.trim();
                                         if !trimmed.is_empty() {
                                             this.tts_script = trimmed.to_owned();
                                             cx.notify();
                                         }
                                     }
-                                }
                             })),
                     ),
             )

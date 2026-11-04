@@ -284,10 +284,13 @@ impl ProjectState {
         let (mut project, initial_error) = Self::load_or_initialize(&project_path);
         ensure_stratified_tracks(&mut project);
 
-        // Auto-heal any pseudo-paths (e.g. .preset clips) into real high-resolution MP4s in ./assets/presets/
+        // Auto-heal any video preset pseudo-paths into real high-resolution MP4s in ./assets/presets/
         let (w, h) = (project.resolution.width, project.resolution.height);
         let mut healed_assets = Vec::new();
         for track in &mut project.tracks {
+            if track.kind == TrackKind::Subtitle {
+                continue;
+            }
             let is_v2 = track.name == TRACK_NAME_V2_BROLL;
             for clip in &mut track.clips {
                 if clip.source_path.extension().and_then(|s| s.to_str()) == Some("preset") {
@@ -326,6 +329,10 @@ impl ProjectState {
                 }
             }
         }
+        project.assets.retain(|a| {
+            let s = a.path.to_string_lossy();
+            !s.contains("SUB_T:") && !s.contains("SUB_SB") && !s.ends_with(".preset")
+        });
         for (mp4_path, dur) in healed_assets {
             let _ = project.ensure_asset_for_path(&mp4_path, dur);
         }
@@ -367,11 +374,10 @@ impl ProjectState {
                                 state.aspect_ratio = PreviewAspectRatio::from_resolution(
                                     state.project.resolution,
                                 );
-                                if let Some(selected) = state.selected_clip_id {
-                                    if state.project.find_clip(selected).is_err() {
+                                if let Some(selected) = state.selected_clip_id
+                                    && state.project.find_clip(selected).is_err() {
                                         state.selected_clip_id = None;
                                     }
-                                }
                                 state.reload_count += 1;
                                 state.last_error = None;
                                 state.request_project_thumbnails();
@@ -566,8 +572,8 @@ impl ProjectState {
     pub(crate) fn undo(&mut self, cx: &mut Context<Self>) {
         if apply_undo(&mut self.project, &mut self.undo_stack, &mut self.redo_stack) {
             self.aspect_ratio = PreviewAspectRatio::from_resolution(self.project.resolution);
-            if let Some(selected) = self.selected_clip_id {
-                if self.project.find_clip(selected).is_err() {
+            if let Some(selected) = self.selected_clip_id
+                && self.project.find_clip(selected).is_err() {
                     self.selected_clip_id = self
                         .project
                         .tracks
@@ -576,7 +582,6 @@ impl ProjectState {
                         .map(|c| c.id)
                         .next();
                 }
-            }
             self.playhead_time = self.playhead_time.clamp(0.0, self.timeline_span());
             self.request_project_thumbnails();
             self.status_message = Some(format!(
@@ -599,8 +604,8 @@ impl ProjectState {
     pub(crate) fn redo(&mut self, cx: &mut Context<Self>) {
         if apply_redo(&mut self.project, &mut self.undo_stack, &mut self.redo_stack) {
             self.aspect_ratio = PreviewAspectRatio::from_resolution(self.project.resolution);
-            if let Some(selected) = self.selected_clip_id {
-                if self.project.find_clip(selected).is_err() {
+            if let Some(selected) = self.selected_clip_id
+                && self.project.find_clip(selected).is_err() {
                     self.selected_clip_id = self
                         .project
                         .tracks
@@ -609,7 +614,6 @@ impl ProjectState {
                         .map(|c| c.id)
                         .next();
                 }
-            }
             self.playhead_time = self.playhead_time.clamp(0.0, self.timeline_span());
             self.request_project_thumbnails();
             self.status_message = Some(format!(
@@ -968,15 +972,14 @@ impl ProjectState {
 
     pub(crate) fn open_settings_modal(&mut self, cx: &mut Context<Self>) {
         self.show_settings_modal = true;
-        if self.settings_api_key_input.is_empty() {
-            if let Some(k) = self
+        if self.settings_api_key_input.is_empty()
+            && let Some(k) = self
                 .gemini_api_key_override
                 .clone()
                 .or_else(|| env::var("GEMINI_API_KEY").ok())
             {
                 self.settings_api_key_input = k;
             }
-        }
         self.settings_validation_result = None;
         cx.notify();
     }
@@ -1139,11 +1142,10 @@ impl ProjectState {
     pub(crate) fn set_mark_in_at_playhead(&mut self, cx: &mut Context<Self>) {
         let t = self.playhead_time.max(0.0);
         self.mark_in = Some(t);
-        if let Some(out_pt) = self.mark_out {
-            if out_pt <= t {
+        if let Some(out_pt) = self.mark_out
+            && out_pt <= t {
                 self.mark_out = None;
             }
-        }
         self.status_message = Some(format!("Entrada [I] fijada en {}", format_timecode(t)));
         cx.notify();
     }
@@ -1152,11 +1154,10 @@ impl ProjectState {
     pub(crate) fn set_mark_out_at_playhead(&mut self, cx: &mut Context<Self>) {
         let t = self.playhead_time.max(0.1);
         self.mark_out = Some(t);
-        if let Some(in_pt) = self.mark_in {
-            if in_pt >= t {
+        if let Some(in_pt) = self.mark_in
+            && in_pt >= t {
                 self.mark_in = Some(0.0);
             }
-        }
         self.status_message = Some(format!("Salida [O] fijada en {}", format_timecode(t)));
         cx.notify();
     }
@@ -1302,6 +1303,7 @@ impl ProjectState {
     }
 
     /// Returns the decoded GPU [`RenderImage`] frames for V1 (base) and V2 (overlay), if present.
+    #[allow(clippy::type_complexity)]
     pub(crate) fn current_preview_layers(
         &self,
     ) -> (
@@ -1333,9 +1335,9 @@ impl ProjectState {
         };
 
         // Fallback for single-track projects or legacy lookup:
-        if v1_img.is_none() && v2_layer.is_none() {
-            if let Some((clip, _)) = self.active_video_clip_at_playhead() {
-                if let Some(img) = self.frame_engine.current_frame_image() {
+        if v1_img.is_none() && v2_layer.is_none()
+            && let Some((clip, _)) = self.active_video_clip_at_playhead()
+                && let Some(img) = self.frame_engine.current_frame_image() {
                     let is_v2 = self
                         .project
                         .tracks
@@ -1347,8 +1349,6 @@ impl ProjectState {
                         return (Some(img), None);
                     }
                 }
-            }
-        }
 
         (v1_img, v2_layer)
     }
@@ -1400,32 +1400,45 @@ impl ProjectState {
         let t = self.playhead_time;
         let mut sources = Vec::new();
         for track in &self.project.tracks {
-            if track.muted || track.volume <= 0.001 {
+            if track.muted || !track.visible || track.volume <= 0.001 {
                 continue;
             }
             if track.kind != TrackKind::Audio && track.kind != TrackKind::Video {
                 continue;
             }
-            if let Some(clip) = track
+            for clip in track
                 .clips
                 .iter()
                 .filter(|c| t >= c.timeline_in && t < c.timeline_out - 0.02)
-                .max_by(|a, b| a.timeline_in.total_cmp(&b.timeline_in))
             {
-                if clip.source_path.exists() {
-                    let source_time = clip.timeline_to_source_time(t);
-                    let remaining_tl = (clip.timeline_out - t).max(0.0);
-                    let effective_vol = (clip.volume * track.volume).clamp(0.0, 2.0);
-                    if effective_vol > 0.001 && remaining_tl > 0.05 {
-                        sources.push(AudioPlaybackSource {
-                            clip_id: clip.id,
-                            source_path: clip.source_path.clone(),
-                            source_time,
-                            remaining_timeline_secs: remaining_tl,
-                            speed: clip.speed,
-                            volume: effective_vol,
+                if track.kind == TrackKind::Video {
+                    let has_linked_on_audio_track = self
+                        .project
+                        .tracks
+                        .iter()
+                        .filter(|at| at.kind == TrackKind::Audio)
+                        .flat_map(|at| &at.clips)
+                        .any(|ac| {
+                            ac.source_path == clip.source_path
+                                && (ac.timeline_in - clip.timeline_in).abs() < 0.05
+                                && (ac.timeline_out - clip.timeline_out).abs() < 0.05
                         });
+                    if has_linked_on_audio_track {
+                        continue;
                     }
+                }
+                let source_time = clip.timeline_to_source_time(t);
+                let remaining_tl = (clip.timeline_out - t).max(0.0);
+                let effective_vol = (clip.volume * track.volume).clamp(0.0, 2.0);
+                if effective_vol > 0.001 && remaining_tl > 0.05 {
+                    sources.push(AudioPlaybackSource {
+                        clip_id: clip.id,
+                        source_path: clip.source_path.clone(),
+                        source_time,
+                        remaining_timeline_secs: remaining_tl,
+                        speed: clip.speed,
+                        volume: effective_vol,
+                    });
                 }
             }
         }
@@ -1486,9 +1499,9 @@ impl ProjectState {
 
                 // Seamless clip transition pre-buffering:
                 // When playhead is within 0.5s of the cut boundary, warm up the next clip's FFmpeg pipe
-                if remaining_clip_time <= 0.5 {
-                    if let Some((next_id, next_path, next_src, next_max, next_speed, _)) = next_clip_data {
-                        if next_id != clip_id {
+                if remaining_clip_time <= 0.5
+                    && let Some((next_id, next_path, next_src, next_max, next_speed, _)) = next_clip_data
+                        && next_id != clip_id {
                             self.frame_engine.prebuffer_next_clip(
                                 next_id,
                                 &next_path,
@@ -1498,8 +1511,6 @@ impl ProjectState {
                                 next_speed,
                             );
                         }
-                    }
-                }
             } else {
                 self.frame_engine.request_scrub_frame(
                     source_path.clone(),
@@ -1508,8 +1519,8 @@ impl ProjectState {
                     fps,
                 );
                 // When scrubbing, request the complementary layer (V1 if active was V2, or V2 if active was V1)
-                if let Some((v1_clip, v1_src)) = self.active_v1_clip_at_playhead() {
-                    if v1_clip.source_path != source_path {
+                if let Some((v1_clip, v1_src)) = self.active_v1_clip_at_playhead()
+                    && v1_clip.source_path != source_path {
                         self.frame_engine.request_scrub_frame(
                             v1_clip.source_path.clone(),
                             v1_src,
@@ -1517,9 +1528,8 @@ impl ProjectState {
                             fps,
                         );
                     }
-                }
-                if let Some((v2_clip, v2_src)) = self.active_v2_clip_at_playhead() {
-                    if v2_clip.source_path != source_path {
+                if let Some((v2_clip, v2_src)) = self.active_v2_clip_at_playhead()
+                    && v2_clip.source_path != source_path {
                         self.frame_engine.request_scrub_frame(
                             v2_clip.source_path.clone(),
                             v2_src,
@@ -1527,7 +1537,6 @@ impl ProjectState {
                             fps,
                         );
                     }
-                }
             }
             self.last_rendered_frame_seq = self
                 .last_rendered_frame_seq
@@ -1535,9 +1544,9 @@ impl ProjectState {
         } else {
             self.frame_engine.clear_active_frame();
             // In playback gaps between clips, pre-buffer the upcoming clip if within 0.5s of starting
-            if self.is_playing {
-                if let Some((next_id, next_path, next_src, next_max, next_speed, next_timeline_in)) = next_clip_data {
-                    if next_timeline_in - playhead <= 0.5 {
+            if self.is_playing
+                && let Some((next_id, next_path, next_src, next_max, next_speed, next_timeline_in)) = next_clip_data
+                    && next_timeline_in - playhead <= 0.5 {
                         self.frame_engine.prebuffer_next_clip(
                             next_id,
                             &next_path,
@@ -1547,8 +1556,6 @@ impl ProjectState {
                             next_speed,
                         );
                     }
-                }
-            }
         }
 
         let audio_sources = self.active_audio_sources_at_playhead();
@@ -1582,8 +1589,8 @@ impl ProjectState {
     pub(crate) fn toggle_playback(&mut self, cx: &mut Context<Self>) {
         self.is_playing = !self.is_playing;
 
-        if self.is_playing && self.active_video_clip_at_playhead().is_none() {
-            if let Some(first_clip_start) = self
+        if self.is_playing && self.active_video_clip_at_playhead().is_none()
+            && let Some(first_clip_start) = self
                 .project
                 .tracks
                 .iter()
@@ -1591,14 +1598,11 @@ impl ProjectState {
                 .flat_map(|t| &t.clips)
                 .map(|c| c.timeline_in)
                 .next()
-            {
-                if self.playhead_time < first_clip_start
-                    || self.playhead_time >= self.project.duration() - 0.05
+                && (self.playhead_time < first_clip_start
+                    || self.playhead_time >= self.project.duration() - 0.05)
                 {
                     self.playhead_time = first_clip_start;
                 }
-            }
-        }
 
         self.sync_media_for_playhead();
         cx.notify();
@@ -1921,8 +1925,8 @@ impl ProjectState {
             self.project
                 .add_clip(track_id, preset_source, start_time, 0.0, clip_dur)
         {
-            if let Ok(track) = self.project.track_mut(track_id) {
-                if let Some(clip) = track.clips.iter_mut().find(|c| c.id == clip_id) {
+            if let Ok(track) = self.project.track_mut(track_id)
+                && let Some(clip) = track.clips.iter_mut().find(|c| c.id == clip_id) {
                     clip.name = label.to_owned();
                     if !is_subtitle {
                         clip.opacity = match label {
@@ -1938,7 +1942,6 @@ impl ProjectState {
                         };
                     }
                 }
-            }
             self.selected_clip_id = Some(clip_id);
             self.playhead_time = start_time;
             self.last_error = None;
@@ -2027,14 +2030,13 @@ impl ProjectState {
         );
         cx.spawn(async move |this, cx| {
             let gen_res = smol::unblock(move || {
-                if let Some(k) = key_override {
-                    if is_valid_gemini_api_key(&k) {
+                if let Some(k) = key_override
+                    && is_valid_gemini_api_key(&k) {
                         // Safety: set inside background worker when user configured a valid key in the UI dialog.
                         unsafe {
                             env::set_var("GEMINI_API_KEY", k);
                         }
                     }
-                }
                 match gfcut_mcp::ffmpeg::generate_ai_broll_with_model_and_res(
                     prompt_clone,
                     duration_secs,
@@ -2115,7 +2117,7 @@ impl ProjectState {
                         if maybe_clip.is_some() {
                             state.log_activity(
                                 LogLevel::Warn,
-                                format!("Clip Procedural B-Roll (V2)"),
+                                "Clip Procedural B-Roll (V2)".to_string(),
                                 Some(format!(
                                     "Generado clip MP4 procedural animado en V2 con FFmpeg. Planos: {}\nNotas: {}",
                                     shots.len(),
@@ -2308,8 +2310,7 @@ impl ProjectState {
                             .iter()
                             .find(|t| t.name == TRACK_NAME_A1_VOICE && !t.locked)
                             .map(|t| t.id)
-                        {
-                            if let Ok(clip_id) = state.project.add_clip(
+                            && let Ok(clip_id) = state.project.add_clip(
                                 a1_id,
                                 &wav_path,
                                 insert_time,
@@ -2318,11 +2319,10 @@ impl ProjectState {
                             ) {
                                 state.selected_clip_id = Some(clip_id);
                             }
-                        }
 
                         // 2. Synchronized sentence-chunked subtitles on V3 — Textos & IA Subs
                         let sentences: Vec<&str> = clean_text
-                            .split(|c| c == '.' || c == '!' || c == '?' || c == '\n')
+                            .split(['.', '!', '?', '\n'])
                             .map(str::trim)
                             .filter(|s| !s.is_empty())
                             .collect();
@@ -2341,15 +2341,13 @@ impl ProjectState {
                                     insert_time,
                                     0.0,
                                     duration,
-                                ) {
-                                    if let Ok(v3_track) = state.project.track_mut(v3_id) {
-                                        if let Some(sub_clip) =
+                                )
+                                    && let Ok(v3_track) = state.project.track_mut(v3_id)
+                                        && let Some(sub_clip) =
                                             v3_track.clips.iter_mut().find(|c| c.id == sub_id)
                                         {
                                             sub_clip.name = format!("SUB_TTS: \"{clean_text}\"");
                                         }
-                                    }
-                                }
                             } else {
                                 let total_chars = sentences.iter().map(|s| s.len()).sum::<usize>().max(1);
                                 let mut cur_sub_start = insert_time;
@@ -2361,15 +2359,13 @@ impl ProjectState {
                                         cur_sub_start,
                                         0.0,
                                         s_dur,
-                                    ) {
-                                        if let Ok(v3_track) = state.project.track_mut(v3_id) {
-                                            if let Some(sub_clip) =
+                                    )
+                                        && let Ok(v3_track) = state.project.track_mut(v3_id)
+                                            && let Some(sub_clip) =
                                                 v3_track.clips.iter_mut().find(|c| c.id == sub_id)
                                             {
                                                 sub_clip.name = format!("SUB_TTS: \"{s}\"");
                                             }
-                                        }
-                                    }
                                     cur_sub_start += s_dur;
                                 }
                             }
@@ -2479,14 +2475,13 @@ impl ProjectState {
                                 seg.start.max(0.0),
                                 seg_dur,
                             ) {
-                                if let Ok(v3_track) = state.project.track_mut(v3_id) {
-                                    if let Some(sub_clip) =
+                                if let Ok(v3_track) = state.project.track_mut(v3_id)
+                                    && let Some(sub_clip) =
                                         v3_track.clips.iter_mut().find(|c| c.id == sub_id)
                                     {
                                         sub_clip.name =
                                             format!("SUB_{:02}: \"{}\"", idx + 1, seg.text);
                                     }
-                                }
                                 added_count += 1;
                             }
                         }
@@ -2692,8 +2687,8 @@ impl ProjectState {
             return;
         };
 
-        if let Ok((track_id, _)) = self.project.find_clip(clip_id) {
-            if self
+        if let Ok((track_id, _)) = self.project.find_clip(clip_id)
+            && self
                 .project
                 .track(track_id)
                 .map(|t| t.locked)
@@ -2703,7 +2698,6 @@ impl ProjectState {
                 cx.notify();
                 return;
             }
-        }
 
         self.push_history_snapshot();
         match self.project.remove_clip(clip_id, ripple) {
@@ -3492,24 +3486,21 @@ fn ffmpeg_stderr_last_lines(stderr: &[u8], n: usize) -> String {
 }
 
 fn source_has_audio_stream(path: &Path, assets: &[MediaAsset], require_disk_check: bool) -> bool {
-    if let Some(ext) = path.extension().and_then(OsStr::to_str) {
-        if matches!(
+    if let Some(ext) = path.extension().and_then(OsStr::to_str)
+        && matches!(
             ext.to_ascii_lowercase().as_str(),
             "wav" | "mp3" | "flac" | "ogg" | "m4a"
         ) {
             return true;
         }
-    }
-    if let Some(asset) = assets.iter().find(|a| a.path == path) {
-        if asset.format_name != "unknown" {
+    if let Some(asset) = assets.iter().find(|a| a.path == path)
+        && asset.format_name != "unknown" {
             return !asset.audio_streams.is_empty();
         }
-    }
-    if require_disk_check && path.exists() {
-        if let Ok(probed) = probe_media(path) {
+    if require_disk_check && path.exists()
+        && let Ok(probed) = probe_media(path) {
             return !probed.audio_streams.is_empty();
         }
-    }
     !require_disk_check
 }
 
@@ -3605,7 +3596,11 @@ pub(crate) fn build_ffmpeg_export_plan(
 
     // 1a. Process Base Track V1 (sorted chronologically by timeline_in) with gap filling
     let mut concat_v1_inputs = String::new();
-    let v1_vol = v1_track.map(|t| t.volume).unwrap_or(1.0);
+    let v1_vol = if v1_track.map(|t| t.muted || !t.visible).unwrap_or(false) {
+        0.0
+    } else {
+        v1_track.map(|t| t.volume).unwrap_or(1.0)
+    };
     let mut cursor_time = range_start;
     let mut seg_idx = 0usize;
 
@@ -3649,7 +3644,21 @@ pub(crate) fn build_ffmpeg_export_plan(
         let dur = (eff_tl_out - eff_tl_in).max(0.04);
         let speed = clip.speed.clamp(0.25, 4.0);
         let pts_factor = 1.0 / speed;
-        let eff_vol = (clip.volume * v1_vol).clamp(0.0, 2.0);
+        let has_linked_audio_on_track = project
+            .tracks
+            .iter()
+            .filter(|t| t.kind == TrackKind::Audio)
+            .flat_map(|t| &t.clips)
+            .any(|ac| {
+                ac.source_path == clip.source_path
+                    && (ac.timeline_in - clip.timeline_in).abs() < 0.05
+                    && (ac.timeline_out - clip.timeline_out).abs() < 0.05
+            });
+        let eff_vol = if has_linked_audio_on_track {
+            0.0
+        } else {
+            (clip.volume * v1_vol).clamp(0.0, 2.0)
+        };
 
         filter_parts_base.push(format!(
             "[{in_idx}:v]trim=start={src_in:.4}:end={src_out:.4},setpts={pts_factor:.4}*(PTS-STARTPTS),scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps={fps},format=yuv420p[v1_v_{seg_idx}]"
@@ -3703,11 +3712,10 @@ pub(crate) fn build_ffmpeg_export_plan(
         let in_idx = input_paths.len();
         input_paths.push(clip.source_path.clone());
         input_flags.push(Vec::new());
-        if let Some(t) = v2_track {
-            if !t.muted && t.volume > 0.001 && source_has_audio_stream(&clip.source_path, &project.assets, require_files_exist) {
+        if let Some(t) = v2_track
+            && !t.muted && t.volume > 0.001 && source_has_audio_stream(&clip.source_path, &project.assets, require_files_exist) {
                 v2_audio_sources.push((in_idx, clip, v2_vol));
             }
-        }
 
         let eff_tl_in = clip.timeline_in.max(range_start);
         let eff_tl_out = clip.timeline_out.min(range_end);
@@ -3861,7 +3869,7 @@ pub(crate) fn build_ffmpeg_export_plan(
             }
             let total_inputs = 1 + extra_audio_labels.len();
             audio_filter_parts.push(format!(
-                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=2[outa]"
+                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=0:normalize=0[outa]"
             ));
         }
     } else if !extra_audio_labels.is_empty() {
@@ -3874,7 +3882,7 @@ pub(crate) fn build_ffmpeg_export_plan(
             }
             let total_inputs = extra_audio_labels.len();
             audio_filter_parts.push(format!(
-                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=2[outa]"
+                "{amix_inputs}amix=inputs={total_inputs}:duration=first:dropout_transition=0:normalize=0[outa]"
             ));
         }
     }
@@ -4042,25 +4050,22 @@ where
         if let Some(stdout) = child.stdout.take() {
             use std::io::BufRead;
             let reader = std::io::BufReader::new(stdout);
-            for line in reader.lines() {
-                if let Ok(l) = line {
-                    if let Some(us_str) = l.strip_prefix("out_time_us=") {
-                        if let Ok(us) = us_str.trim().parse::<u64>() {
-                            let cur_secs = us as f64 / 1_000_000.0;
-                            let p = (cur_secs / total_duration).clamp(0.0, 0.99) as f32;
-                            let status = format!(
-                                "Procesando capas V1, V2 y mezcla de audio con FFmpeg... {:.0}% ({})",
-                                p * 100.0,
-                                format_timecode(cur_secs)
-                            );
-                            on_progress(p, &status);
-                        }
-                    } else if let Some(prog_str) = l.strip_prefix("progress=") {
-                        if prog_str.trim() == "end" {
-                            on_progress(1.0, "Empaquetando contenedor MP4...");
-                        }
+            for l in reader.lines().map_while(Result::ok) {
+                if let Some(us_str) = l.strip_prefix("out_time_us=") {
+                    if let Ok(us) = us_str.trim().parse::<u64>() {
+                        let cur_secs = us as f64 / 1_000_000.0;
+                        let p = (cur_secs / total_duration).clamp(0.0, 0.99) as f32;
+                        let status = format!(
+                            "Procesando capas V1, V2 y mezcla de audio con FFmpeg... {:.0}% ({})",
+                            p * 100.0,
+                            format_timecode(cur_secs)
+                        );
+                        on_progress(p, &status);
                     }
-                }
+                } else if let Some(prog_str) = l.strip_prefix("progress=")
+                    && prog_str.trim() == "end" {
+                        on_progress(1.0, "Empaquetando contenedor MP4...");
+                    }
             }
         }
 
@@ -4146,7 +4151,7 @@ pub(crate) fn select_clip_on_track_at_time(clips: &[Clip], t: f64) -> Option<&Cl
 /// Finds the upcoming video clip on the timeline starting at or after timestamp `t`.
 /// Searches all visible, unmuted video tracks and returns the clip whose `timeline_in >= t - 0.001`
 /// that begins earliest.
-pub(crate) fn find_next_video_clip_after_time<'a>(tracks: &'a [Track], t: f64) -> Option<(&'a Clip, f64)> {
+pub(crate) fn find_next_video_clip_after_time(tracks: &[Track], t: f64) -> Option<(&Clip, f64)> {
     let mut candidates = Vec::new();
     for track in tracks {
         if track.kind != TrackKind::Video || track.muted || !track.visible {
@@ -4177,11 +4182,10 @@ pub(crate) fn resolve_project_path() -> PathBuf {
         }
     }
 
-    if let Ok(env_path) = env::var("GFCUT_PROJECT_PATH").or_else(|_| env::var("OPENCUT_PROJECT_PATH")) {
-        if !env_path.is_empty() {
+    if let Ok(env_path) = env::var("GFCUT_PROJECT_PATH").or_else(|_| env::var("OPENCUT_PROJECT_PATH"))
+        && !env_path.is_empty() {
             return PathBuf::from(env_path);
         }
-    }
 
     if Path::new("demo.gfcut.json").exists() {
         PathBuf::from("demo.gfcut.json")
@@ -4356,7 +4360,7 @@ mod tests {
         .expect("export plan should build");
 
         assert!(plan.has_audio_output);
-        assert!(plan.filter_complex.contains("amix=inputs=2:duration=first:dropout_transition=2[outa]"));
+        assert!(plan.filter_complex.contains("amix=inputs=2:duration=first:dropout_transition=0:normalize=0[outa]"));
         assert!(plan.filter_complex.contains("atempo=1.5000"));
         assert!(plan.filter_complex.contains("volume=0.8000"));
         assert!(plan.filter_complex.contains("subtitles='C\\:/temp/test_subs.srt'"));
@@ -4413,7 +4417,7 @@ mod tests {
         assert!(!plan.filter_complex.contains("subtitles"));
         assert_eq!(plan.filter_complex, plan.filter_complex_without_subs);
         assert!(plan.filter_complex.contains("concat=n=1:v=1:a=1[v1_concat][a1_concat]"));
-        assert!(plan.filter_complex.contains("amix=inputs=2:duration=first:dropout_transition=2[outa]"));
+        assert!(plan.filter_complex.contains("amix=inputs=2:duration=first:dropout_transition=0:normalize=0[outa]"));
         assert!(!plan.filter_complex.contains("the mison"));
         assert!(!plan.filter_complex.contains(r"C:\"));
     }
@@ -4646,5 +4650,45 @@ mod tests {
         assert_eq!(clip.timeline_out, drop_position + asset_duration);
         assert_eq!(clip.source_duration(), asset_duration);
         assert_eq!(clip.timeline_duration(), asset_duration);
+    }
+
+    #[test]
+    fn test_linked_v1_a1_and_overlapping_ai_voice_mix_linearly_without_duplication() {
+        let mut project = Project::with_default_tracks("Linked Audio & AI Voice Mix Test");
+        ensure_stratified_tracks(&mut project);
+        let v1_id = project.tracks[2].id;
+        let a1_id = project.tracks[3].id;
+
+        // V1 has main video (73s)
+        project
+            .add_clip(v1_id, "the msion prueba.mp4", 0.0, 0.0, 73.0)
+            .unwrap();
+        // A1 has linked audio from the same video at ducked volume 0.3
+        let linked_a1_id = project
+            .add_clip(a1_id, "the msion prueba.mp4", 0.0, 0.0, 73.0)
+            .unwrap();
+        project
+            .track_mut(a1_id)
+            .unwrap()
+            .clips
+            .iter_mut()
+            .find(|c| c.id == linked_a1_id)
+            .unwrap()
+            .volume = 0.3;
+
+        // A1 also has an overlapping AI voiceover clip at 0..7.6s with volume 1.0
+        project
+            .add_clip(a1_id, "voz_alvaro.wav", 0.0, 0.0, 7.6)
+            .unwrap();
+
+        let plan = build_ffmpeg_export_plan(&project, None, None, None, false)
+            .expect("export plan should build");
+
+        // V1 internal audio is silenced (anullsrc) because A1 holds the linked audio at volume=0.3000
+        assert!(plan.filter_complex.contains("anullsrc=r=48000:cl=stereo,atrim=0:73.0000,asetpts=PTS-STARTPTS[v1_a_0]"));
+        // Both A1 clips (volume=0.3000 and volume=1.0000) are included and linearly mixed with normalize=0
+        assert!(plan.filter_complex.contains("volume=0.3000[aud_0]"));
+        assert!(plan.filter_complex.contains("volume=1.0000[aud_1]"));
+        assert!(plan.filter_complex.contains("amix=inputs=3:duration=first:dropout_transition=0:normalize=0[outa]"));
     }
 }

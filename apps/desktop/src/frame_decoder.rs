@@ -95,16 +95,13 @@ pub(crate) fn probe_media_duration(source_path: &Path) -> Option<f64> {
         ])
         .arg(source_path)
         .output()
-    {
-        if output.status.success() {
+        && output.status.success() {
             let text = String::from_utf8_lossy(&output.stdout);
-            if let Ok(dur) = text.trim().parse::<f64>() {
-                if dur > 0.0 {
+            if let Ok(dur) = text.trim().parse::<f64>()
+                && dur > 0.0 {
                     return Some(dur);
                 }
-            }
         }
-    }
 
     // 2. Fallback to format=duration (e.g. for audio-only containers or containers without per-stream duration)
     let mut cmd = Command::new(ffprobe);
@@ -255,9 +252,9 @@ pub(crate) fn decode_frame_with_ffmpeg(
     height: u32,
 ) -> FrameDecodeOutcome {
     let mut effective_path = source_path.to_path_buf();
-    if !effective_path.exists() {
-        if effective_path.extension().and_then(|e| e.to_str()) == Some("preset") {
-            if let Some(stem) = effective_path.file_stem().and_then(|s| s.to_str()) {
+    if !effective_path.exists()
+        && effective_path.extension().and_then(|e| e.to_str()) == Some("preset")
+            && let Some(stem) = effective_path.file_stem().and_then(|s| s.to_str()) {
                 let preset_mp4 = PathBuf::from("./assets/presets").join(format!("{stem}.mp4"));
                 if preset_mp4.is_file() {
                     effective_path = preset_mp4;
@@ -270,8 +267,6 @@ pub(crate) fn decode_frame_with_ffmpeg(
                     effective_path = gen_path;
                 }
             }
-        }
-    }
 
     if !effective_path.exists() {
         return FrameDecodeOutcome::EofOrIncomplete;
@@ -512,6 +507,7 @@ impl FramePlaybackEngine {
     }
 
     /// Internal factory that spawns a headless FFmpeg continuous stream and reader thread.
+    #[allow(clippy::too_many_arguments)]
     fn spawn_active_video_stream(
         &self,
         clip_id: Uuid,
@@ -523,16 +519,14 @@ impl FramePlaybackEngine {
         is_prebuffer: bool,
     ) -> Option<ActiveVideoStream> {
         let mut effective_path = source_path.to_path_buf();
-        if !effective_path.exists() {
-            if effective_path.extension().and_then(|e| e.to_str()) == Some("preset") {
-                if let Some(stem) = effective_path.file_stem().and_then(|s| s.to_str()) {
+        if !effective_path.exists()
+            && effective_path.extension().and_then(|e| e.to_str()) == Some("preset")
+                && let Some(stem) = effective_path.file_stem().and_then(|s| s.to_str()) {
                     let preset_mp4 = PathBuf::from("./assets/presets").join(format!("{stem}.mp4"));
                     if preset_mp4.is_file() {
                         effective_path = preset_mp4;
                     }
                 }
-            }
-        }
         if !effective_path.exists() {
             return None;
         }
@@ -771,18 +765,16 @@ impl FramePlaybackEngine {
         }
 
         // If prebuffer is already running for this clip, keep it running
-        if let Some(stream) = &self.prebuffered_stream {
-            if stream.clip_id == clip_id && stream.source_path == source_path {
+        if let Some(stream) = &self.prebuffered_stream
+            && stream.clip_id == clip_id && stream.source_path == source_path {
                 return;
             }
-        }
 
         // If the active stream already plays this clip, no need to prebuffer
-        if let Some(stream) = &self.active_stream {
-            if stream.clip_id == clip_id && stream.source_path == source_path {
+        if let Some(stream) = &self.active_stream
+            && stream.clip_id == clip_id && stream.source_path == source_path {
                 return;
             }
-        }
 
         // Terminate any previous obsolete prebuffer
         if let Some(mut old) = self.prebuffered_stream.take() {
@@ -962,11 +954,10 @@ impl FramePlaybackEngine {
         let clamped_time = clamp_seek_timestamp(source_time, asset_duration, fps);
         let key = FrameCacheKey::new(source_path, clamped_time);
 
-        if let Some((cur_key, _)) = &self.current_frame {
-            if cur_key == &key {
+        if let Some((cur_key, _)) = &self.current_frame
+            && cur_key == &key {
                 return None;
             }
-        }
 
         if let Some(cached) = self.cache.get(&key) {
             let seq = self.seq_counter.fetch_add(1, Ordering::SeqCst) + 1;
@@ -1033,11 +1024,10 @@ impl FramePlaybackEngine {
 
     /// Returns the currently active frame if it corresponds to `source_path`.
     pub(crate) fn current_frame_for_path(&self, source_path: &Path) -> Option<Arc<RenderImage>> {
-        if let Some((key, img)) = &self.current_frame {
-            if key.source_path == source_path {
+        if let Some((key, img)) = &self.current_frame
+            && key.source_path == source_path {
                 return Some(img.clone());
             }
-        }
         None
     }
 
@@ -1254,7 +1244,7 @@ impl AudioPlaybackEngine {
     }
 
     /// Synchronizes audio playback with the current timeline playhead and clip parameters (single-source compatibility).
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::too_many_arguments)]
     pub(crate) fn sync(
         &mut self,
         is_playing: bool,

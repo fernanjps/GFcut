@@ -169,19 +169,16 @@ pub(crate) fn generate_thumbnail_for_path(
     timestamp_secs: f64,
 ) -> Arc<RenderImage> {
     if !is_audio_extension(source_path) {
-        if let Some(jpeg_bytes) = extract_jpeg_thumbnail_bytes(source_path, timestamp_secs) {
-            if let Some(render_img) = jpeg_bytes_to_render_image(&jpeg_bytes) {
+        if let Some(jpeg_bytes) = extract_jpeg_thumbnail_bytes(source_path, timestamp_secs)
+            && let Some(render_img) = jpeg_bytes_to_render_image(&jpeg_bytes) {
                 return render_img;
             }
-        }
         // Retry at 0.0s if timestamp_secs was near EOF or failed
-        if timestamp_secs > 0.01 {
-            if let Some(jpeg_bytes) = extract_jpeg_thumbnail_bytes(source_path, 0.0) {
-                if let Some(render_img) = jpeg_bytes_to_render_image(&jpeg_bytes) {
+        if timestamp_secs > 0.01
+            && let Some(jpeg_bytes) = extract_jpeg_thumbnail_bytes(source_path, 0.0)
+                && let Some(render_img) = jpeg_bytes_to_render_image(&jpeg_bytes) {
                     return render_img;
                 }
-            }
-        }
     }
 
     let label = source_path
